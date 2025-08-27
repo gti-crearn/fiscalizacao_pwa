@@ -22,14 +22,13 @@ type Params = {
     id: string;
 };
 
-
 // src/types/team.ts
 export interface User {
     id: number;
     username: string;
     name: string;
     email: string;
-    role: "USER" | "SUPERVISOR" | "ADMIN"; // Ajuste conforme sua API
+    role: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -199,9 +198,9 @@ const TeamPage = ({ params }: PageProps) => {
                     <div>
                         <p className="font-semibold text-gray-700">Status:</p>
                         <span
-                            className={`inline-block px-2 py-1 text-xs font-medium rounded ${team.status === "ATIVO"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
+                            className={`flex items-center justify-center w-max px-2 py-[1px] border font-medium rounded ${team.status === "ATIVO"
+                                ? "bg-green-200 text-green-700"
+                                : "bg-red-200 text-red-700"
                                 }`}
                         >
                             {team.status === "ATIVO" ? "Ativa" : "Inativa"}
@@ -256,7 +255,7 @@ const TeamPage = ({ params }: PageProps) => {
                                 <th className="py-2 px-4 text-left font-semibold text-gray-700">Nome</th>
                                 <th className="py-2 px-4 text-left font-semibold text-gray-700">Tipo</th>
                                 <th className="py-2 px-4 text-left font-semibold text-gray-700">Email</th>
-                                <th className="py-2 px-4 text-left font-semibold text-gray-700">Status</th>
+                                <th className="py-2 px-4 text-left font-semibold text-gray-700">Criado em</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -300,10 +299,8 @@ const TeamPage = ({ params }: PageProps) => {
                                         </td>
                                         <td className="py-3 px-4">{user.email}</td>
                                         <td className="py-3 px-4">
-                                            <span
-                                                className="inline-block px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800"
-                                            >
-                                                Ativo
+                                            <span>
+                                                {formatDate(user?.createdAt)}
                                             </span>
                                         </td>
                                     </tr>
@@ -333,7 +330,7 @@ const TeamPage = ({ params }: PageProps) => {
                                 <th className="py-2 px-4 text-left font-medium text-gray-700">Endereço</th>
                                 <th className="py-2 px-4 text-left font-medium text-gray-700">Status</th>
                                 <th className="py-2 px-4 text-left font-medium text-gray-700">Ação</th>
-                                
+
                             </tr>
                         </thead>
                         <tbody>
@@ -347,9 +344,13 @@ const TeamPage = ({ params }: PageProps) => {
                                     <td className="py-3 px-4">{target.enderecoObra}</td>
                                     <td className="py-3 px-4">
                                         <span
-                                            className={`inline-block px-2 py-1 text-xs font-medium rounded ${target.status === "Fiscalizado"
-                                                ? "bg-green-100 text-green-800"
-                                                : "bg-gray-100 text-gray-800"
+                                            className={`flex items-center justify-center w-max px-2 py-[1px] border  text-xs font-medium rounded ${target.status === "CONCLUÍDA"
+                                                ? "bg-green-200 text-green-700"
+                                                : target.status === "EM ANDAMENTO" || target.status === "EM ATENDIMENTO"
+                                                    ? "bg-yellow-200 text-yellow-700 "
+                                                    : target.status === "NÃO INICIADA"
+                                                        ? "bg-blue-200 text-blue-700"
+                                                        : "bg-gray-200 text-gray-700" // padrão para outros
                                                 }`}
                                         >
                                             {target.status}
@@ -359,7 +360,7 @@ const TeamPage = ({ params }: PageProps) => {
                                         <button
                                             className="p-1 text-blue-600 cursor-pointer hover:bg-blue-100 rounded transition"
                                             aria-label="Ver detalhes"
-                                            
+
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"

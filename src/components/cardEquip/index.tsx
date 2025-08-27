@@ -37,15 +37,15 @@ export function CardEquip({
         <Link href={link} className="w-full block hover:bg-gray-200">
             <div className="w-full rounded-xl shadow-md bg-white border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer">
                 {/* Cabeçalho */}
-                <div className="flex justify-between items-center p-4 bg-gray-50 border-b">
+                <div className="flex justify-start items-center p-4 bg-gray-50 border-b">
                     <span className="px-3 py-1 text-sm font-semibold text-white rounded-full" style={{ background: `${color}` }}>
                         {name}
                     </span>
-                    <span
+                    {/* <span
                         className={`px-3 py-1 text-sm font-medium rounded-full ${statusColor} text-white`}
                     >
                         {statusText}
-                    </span>
+                    </span> */}
                 </div>
 
                 {/* Métricas */}
