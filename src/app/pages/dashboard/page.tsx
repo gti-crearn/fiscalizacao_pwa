@@ -4,9 +4,10 @@ import { CardEquip } from "@/components/cardEquip";
 import { FormCreateTeam } from "@/components/FormCreateTeam";
 import { Modal } from "@/components/modal";
 import DashboardHeader from "@/components/title";
+import { DataContext } from "@/context/AuthData";
 import { api } from "@/services/api";
 import { formatDateBR } from "@/utils/formatDate";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { FaMapMarkerAlt, FaClock, FaCheckCircle, FaUsers, FaSync } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 
@@ -53,6 +54,30 @@ interface Team {
 
 export default function Dashboard() {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { targets, filters, setFilters } = useContext(DataContext);
+
+    // useMemo evita recalcular a cada render
+  const { nao_iniciado, em_andamento , concluida, outros } = useMemo(() => {
+    return targets.reduce(
+      (acc, t) => {
+        switch (t.status) {
+          case "NÃO INICIADA":
+            acc.nao_iniciado += 1;
+            break;
+          case "EM ANDAMENTO":
+            acc.em_andamento += 1;
+            break;
+          case "CONCLUÍDA":
+            acc.concluida += 1;
+            break;
+          default:
+            acc.outros += 1;
+        }
+        return acc;
+      },
+      { nao_iniciado: 0, em_andamento: 0, concluida: 0, outros: 0 }
+    );
+  }, [targets]);
     
     const refreshData = () => {
         window.location.reload()
@@ -105,22 +130,29 @@ export default function Dashboard() {
             </div>
             <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 p-6">
                 <Card
-                    value={1191}
+                    value={targets.length}
                     label="Total de Fiscalização"
                     bgColor="from-blue-700"
                     icon={<FaMapMarkerAlt />}
                     toColor="bg-blue-500"
                 />
                 <Card
-                    value={1187}
-                    label="Pendentes"
-                    bgColor="from-yellow-700"
+                    value={nao_iniciado}
+                    label="Não Iniciada"
+                    bgColor="from-gray-700"
                     icon={<FaClock />}
-                    toColor="bg-yellow-500"
+                    toColor="bg-gray-500"
                 />
                 <Card
-                    value={4}
-                    label="Fiscalizados"
+                    value={em_andamento}
+                    label="Em Andamento"
+                    bgColor="from-yellow-700"
+                    icon={<FaCheckCircle />}
+                    toColor="bg-yellow-500"
+                />
+                  <Card
+                    value={concluida}
+                    label="Concluídas"
                     bgColor="from-green-700"
                     icon={<FaCheckCircle />}
                     toColor="bg-green-500"

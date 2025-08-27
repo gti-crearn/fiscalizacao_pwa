@@ -3,13 +3,15 @@
 
 import React, { useEffect, useState } from "react";
 import { api } from "@/services/api";
+import { useRouter } from "next/navigation";
+import { ButtonComponent } from "@/components/button";
+import { SiGooglemaps } from "react-icons/si";
 
 interface TargetTableProps {
   onSelectionChange: (selectedTargetIds: number[]) => void;
 }
 
 // src/types/target.ts
-
 export interface Team {
   id: number;
   name: string;
@@ -47,6 +49,8 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
   const [selectedTargetIds, setSelectedTargetIds] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
   const [loading, setLoading] = useState(true);
+
+  const router = useRouter();
 
   // Filtros
   const [filters, setFilters] = useState({
@@ -136,9 +140,25 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
     });
   };
 
+
+  const handleOpenMap = () => {
+    // Salvamos os targets no contexto antes de ir para o mapa
+    // Ou você pode usar sessionStorage para persistência simples
+    sessionStorage.setItem("userTargets", JSON.stringify(targets));
+    router.push("/pages/minhas_fiscalizacoes/mapa");
+  };
+
   return (
     <div className="bg-white border border-gray-300 rounded-lg shadow overflow-hidden">
-      {/* Filtros */}
+      <div className="w-fill flex items-center p-4 justify-end">
+        <ButtonComponent
+          variant="blue"
+          onClick={handleOpenMap}
+          icon={<SiGooglemaps size={18} />}
+        >
+          Ver no Mapa
+        </ButtonComponent>
+      </div>
       <div className="p-4 border-b bg-gray-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Nº ART</label>
@@ -193,7 +213,7 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
 
       {/* Tabela */}
       <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+        <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-4 py-3 text-left">
@@ -251,15 +271,14 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
                     <td className="px-4 py-3 text-gray-700">{target.enderecoObra}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`inline-block px-2 py-1 text-xs rounded-full ${
-                          target.status === "NÃO INICIADA"
-                            ? "bg-gray-100 text-gray-800"
-                            : target.status === "EM ATENDIMENTO"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : target.status === "CONCLUÍDA"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-blue-100 text-blue-800"
-                        }`}
+                        className={`flex items-center justify-center w-max px-2 py-[1px] border  text-xs font-medium rounded ${target.status === "CONCLUÍDA"
+                          ? "bg-green-200 text-green-700"
+                          : target.status === "EM ANDAMENTO"
+                            ? "bg-yellow-200 text-yellow-700 "
+                            : target.status === "NÃO INICIADA"
+                              ? "bg-blue-200 text-blue-700"
+                              : "bg-gray-200 text-gray-700" // padrão para outros
+                          }`}
                       >
                         {target.status}
                       </span>

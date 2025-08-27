@@ -7,6 +7,7 @@ import DashboardHeader from "@/components/title";
 import { TargetTable } from "./components/targetTable";
 import { AssignTargetsModal } from "./components/assignTargetsModal";
 import { ButtonComponent } from "@/components/button";
+import { SiGooglemaps } from "react-icons/si";
 
 export default function TargetsPage() {
     const [selectedTargetIds, setSelectedTargetIds] = useState<number[]>([]);
@@ -20,6 +21,8 @@ export default function TargetsPage() {
         // Atualiza a lista de alvos
         console.log("Alvos atribuídos:", selectedTargetIds);
     };
+
+
 
     return (
         <div className="min-h-screen bg-gray-50 p-6">
@@ -37,6 +40,7 @@ export default function TargetsPage() {
                 >
                     Atribuir a Equipe ({selectedTargetIds.length})
                 </ButtonComponent>
+            
             </div>
 
             <TargetTable onSelectionChange={handleSelectionChange} />

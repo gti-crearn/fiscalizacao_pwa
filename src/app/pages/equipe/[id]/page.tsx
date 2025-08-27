@@ -346,7 +346,7 @@ const TeamPage = ({ params }: PageProps) => {
                                         <span
                                             className={`flex items-center justify-center w-max px-2 py-[1px] border  text-xs font-medium rounded ${target.status === "CONCLUÍDA"
                                                 ? "bg-green-200 text-green-700"
-                                                : target.status === "EM ANDAMENTO" || target.status === "EM ATENDIMENTO"
+                                                : target.status === "EM ANDAMENTO"
                                                     ? "bg-yellow-200 text-yellow-700 "
                                                     : target.status === "NÃO INICIADA"
                                                         ? "bg-blue-200 text-blue-700"

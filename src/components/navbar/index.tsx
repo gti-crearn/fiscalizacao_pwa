@@ -38,10 +38,16 @@ export default function Navbar() {
             <FaHome /> Início
           </Link>
           <Link
-            href="/alvos"
+            href="/pages/fiscalizacoes"
             className="flex items-center gap-2 hover:opacity-80"
           >
-            <FaList /> Minhas Fiscalizacoes
+            <FaList /> Alvos
+          </Link>
+          <Link
+            href="/pages/minhas_fiscalizacoes"
+            className="flex items-center gap-2 hover:opacity-80"
+          >
+            <FaList /> Meus Alvos
           </Link>
           <Link
             href="/mapa"
@@ -84,7 +90,7 @@ export default function Navbar() {
           <Link href="/" className="flex items-center gap-2">
             <FaHome /> Início
           </Link>
-          <Link href="/alvos" className="flex items-center gap-2">
+          <Link href="/pages/minhas_fiscalizacoes" className="flex items-center gap-2">
             <FaList /> Minhas Fiscalizacoes
           </Link>
           <Link href="/mapa" className="flex items-center gap-2">
