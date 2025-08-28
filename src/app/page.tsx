@@ -3,7 +3,7 @@
 import React, { useState, FormEvent } from "react";
 import { LogIn } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
-
+import { useRouter } from "next/navigation";
 
 export default function Login() {
   const [username, setUsername] = useState<string>("");
@@ -11,10 +11,13 @@ export default function Login() {
 
   const { login, error, loading } = useAuth();
 
+  const router = useRouter();
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await login(username, password);     
+      router.push("/pages/minhas_fiscalizacoes");
     } catch (err) {
       console.error("Falha no login:", err);
     }

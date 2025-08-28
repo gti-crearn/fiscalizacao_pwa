@@ -1,3 +1,15 @@
+
+  
+  export interface Team {
+    id: number;
+    name: string;
+    status: string,
+    color: string;
+    targets: Target[];
+    createdAt: string;
+    updatedAt: string;
+  }
+  
 export interface Target {
     id: number;
     numeroArt: string;
@@ -17,18 +29,9 @@ export interface Target {
     teamId: number;
     createdAt: string; // ISO date string
     updatedAt: string; // ISO date string
+    team?: Team;
   }
-  
-  export interface Team {
-    id: number;
-    name: string;
-    status: string,
-    color: string;
-    targets: Target[];
-    createdAt: string;
-    updatedAt: string;
-  }
-  
+
   export interface User {
     id: number;
     name: string;

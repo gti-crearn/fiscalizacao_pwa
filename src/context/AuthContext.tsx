@@ -11,6 +11,7 @@ import Cookies from "js-cookie";
 import { api } from "../services/api";
 import {jwtDecode} from "jwt-decode";
 
+
 // Tipagem do payload do token (conforme o que sua API coloca dentro do JWT)
 interface JwtPayload {
     sub: number;

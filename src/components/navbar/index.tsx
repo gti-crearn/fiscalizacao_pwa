@@ -7,13 +7,14 @@ import {
   FaList,
   FaMapMarkerAlt,
   FaUsers,
-  FaTachometerAlt,
-  FaChartLine,
+  FaTachometerAlt, 
   FaUserCircle,
   FaBars,
   FaTimes,
 } from "react-icons/fa";
 import { useAuth } from "@/context/AuthContext";
+import { PiUserList, PiUserListFill } from "react-icons/pi";
+import { RiMapPinUserFill } from "react-icons/ri";
 
 export default function Navbar() {
   const { user } = useAuth();
@@ -24,11 +25,11 @@ export default function Navbar() {
       <div className=" w-full  mx-auto px-4 flex justify-between items-center h-18">
         {/* Logo + Título */}
         <div className="flex items-center gap-3">
-          <img
+          {/* <img
             src="/logo.png" // coloque sua logo na pasta public
             alt="Logo"
             className="h-8 w-8"
-          />
+          /> */}
           <span className="font-bold text-lg">Sistema de Fiscalização</span>
         </div>
 
@@ -47,14 +48,14 @@ export default function Navbar() {
             href="/pages/minhas_fiscalizacoes"
             className="flex items-center gap-2 hover:opacity-80"
           >
-            <FaList /> Meus Alvos
+            <RiMapPinUserFill size={20} /> Meus Alvos
           </Link>
-          <Link
+          {/* <Link
             href="/mapa"
             className="flex items-center gap-2 hover:opacity-80"
           >
             <FaMapMarkerAlt /> Mapa
-          </Link>
+          </Link> */}
           <Link
             href="/equipes"
             className="flex items-center gap-2 hover:opacity-80"
@@ -77,7 +78,7 @@ export default function Navbar() {
 
         {/* Botão Mobile */}
         <button
-          className="md:hidden text-2xl"
+          className="lg:hidden text-2xl"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <FaTimes /> : <FaBars />}

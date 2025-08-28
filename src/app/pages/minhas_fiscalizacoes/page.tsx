@@ -2,7 +2,6 @@
 "use client";
 
 import { ButtonComponent } from "@/components/button";
-import { useAuth } from "@/context/AuthContext";
 import { DataContext } from "@/context/AuthData";
 import { Target } from "@/utils/types";
 import { useContext, useState } from "react";

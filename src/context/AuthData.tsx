@@ -1,9 +1,18 @@
+// context/DataContext.tsx
 "use client";
+
 import { createContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { useAuth } from "./AuthContext";
 import { User, Target } from "@/utils/types";
-import { salvarUserData, carregarTodosUsers } from "@/services/idb";
+
+// ✅ Importe as novas funções
+import {
+  salvarUserData,
+  carregarTodosUsers,
+  salvarTargets,
+  carregarTodosTargets,
+} from "@/services/idb";
 
 type ProviderProps = { children: React.ReactNode };
 
@@ -16,7 +25,6 @@ interface Filters {
 interface AppContextInterface {
   userData: User[];
   isOffline: boolean;
-
   targets: Target[];
   filters: Filters;
   setFilters: React.Dispatch<React.SetStateAction<Filters>>;
@@ -39,7 +47,6 @@ export function DataProvider({ children }: ProviderProps) {
 
   const [userData, setUserData] = useState<User[]>([]);
   const [isOffline, setIsOffline] = useState(false);
-
   const [targets, setTargets] = useState<Target[]>([]);
   const [filters, setFilters] = useState<Filters>({});
   const [loading, setLoading] = useState(false);
@@ -71,10 +78,18 @@ export function DataProvider({ children }: ProviderProps) {
       if (filters.status) params.append("status", filters.status);
 
       const response = await api.get<Target[]>("/target", { params });
-      setTargets(response.data);
+      const data = response.data;
+
+      setTargets(data);
+      // ✅ Salva no IndexedDB para uso offline
+      await salvarTargets(data);
+      setIsOffline(false);
     } catch (err) {
       console.error("Erro ao carregar alvos:", err);
-      setTargets([]);
+      // ✅ Em caso de erro, carrega os dados offline
+      const offlineTargets = await carregarTodosTargets();
+      setTargets(offlineTargets);
+      setIsOffline(true);
     } finally {
       setLoading(false);
     }
@@ -90,10 +105,25 @@ export function DataProvider({ children }: ProviderProps) {
 
   useEffect(() => {
     getUser();
-    const onOnline = () => getUser();
+    // Recarrega dados quando voltar online
+    const onOnline = () => {
+      getUser();
+      fetchTargets();
+    };
     window.addEventListener("online", onOnline);
     return () => window.removeEventListener("online", onOnline);
   }, [user?.id]);
+
+  // ✅ Carregar targets offline ao montar o componente
+  useEffect(() => {
+    async function carregarOffline() {
+      const offlineTargets = await carregarTodosTargets();
+      if (offlineTargets.length > 0 && targets.length === 0) {
+        setTargets(offlineTargets);
+      }
+    }
+    carregarOffline();
+  }, []);
 
   return (
     <DataContext.Provider

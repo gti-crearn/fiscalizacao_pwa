@@ -1,121 +1,52 @@
 // src/components/TargetTable.tsx
 "use client";
 
-import React, { useEffect, useState } from "react";
-import { api } from "@/services/api";
+import React, { useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ButtonComponent } from "@/components/button";
 import { SiGooglemaps } from "react-icons/si";
+import { DataContext } from "@/context/AuthData";
+
 
 interface TargetTableProps {
   onSelectionChange: (selectedTargetIds: number[]) => void;
 }
 
-// src/types/target.ts
-export interface Team {
-  id: number;
-  name: string;
-  status: string;
-  color: string;
-  coordinatorId: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Target {
-  id: number;
-  numeroArt: string;
-  tipoArt: string;
-  nomeProfissional: string;
-  tituloProfissional: string;
-  empresa: string;
-  cnpj: string;
-  contratante: string;
-  nomeProprietario: string;
-  telefoneProprietario: string;
-  enderecoObra: string | null;
-  capacidadeObra: string | null;
-  latitude: string;
-  longitude: string;
-  status: string;
-  teamId: number | null;
-  createdAt: string;
-  updatedAt: string;
-  team?: Team;
-}
-
 export function TargetTable({ onSelectionChange }: TargetTableProps) {
-  const [targets, setTargets] = useState<Target[]>([]);
+  const { targets, filters: contextFilters, setFilters, loading, fetchTargets } = useContext(DataContext);
+
   const [selectedTargetIds, setSelectedTargetIds] = useState<number[]>([]);
   const [selectAll, setSelectAll] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  const router = useRouter();
-
-  // Filtros
-  const [filters, setFilters] = useState({
+  const [localFilters, setLocalFilters] = useState({
     numeroArt: "",
     teamId: "",
     status: "",
   });
 
-  const [teams, setTeams] = useState<{ id: number; name: string }[]>([]);
+  const router = useRouter();
 
-  // Buscar equipes para o select
+  // ✅ Sincroniza filtros locais com os do contexto (opcional, para UI)
   useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        const response = await api.get("/team");
-        setTeams(response.data);
-      } catch (err) {
-        console.error("Erro ao carregar equipes:", err);
-      }
-    };
-    fetchTeams();
-  }, []);
+    setLocalFilters({
+      numeroArt: contextFilters.numeroArt || "",
+      teamId: contextFilters.teamId || "",
+      status: contextFilters.status || "",
+    });
+  }, [contextFilters]);
 
-  // Buscar alvos com filtros
-  const fetchTargets = async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams();
-
-      if (filters.numeroArt) params.append("numeroArt", filters.numeroArt);
-      if (filters.teamId) params.append("teamId", filters.teamId);
-      if (filters.status) params.append("status", filters.status);
-
-      const response = await api.get<Target[]>("/target", { params });
-      setTargets(response.data);
-    } catch (err: any) {
-      console.error("Erro ao carregar alvos:", err);
-      setTargets([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Busca com debounce
+  // ✅ Notifica pai sobre seleção
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      fetchTargets();
-    }, 500);
+    onSelectionChange(selectedTargetIds);
+  }, [selectedTargetIds, onSelectionChange]);
 
-    return () => clearTimeout(delayDebounce);
-  }, [filters]);
-
-  // Resetar seleção ao mudar alvos
+  // ✅ Reseta seleção quando os alvos mudarem
   useEffect(() => {
     setSelectedTargetIds([]);
     setSelectAll(false);
   }, [targets]);
 
-  // Notificar pai sobre seleção
-  useEffect(() => {
-    onSelectionChange(selectedTargetIds);
-  }, [selectedTargetIds, onSelectionChange]);
-
   const handleSelectAll = () => {
-    const availableTargets = targets.filter((t) => !t.teamId); // Só os sem equipe
+    const availableTargets = targets.filter((t) => !t.teamId);
     if (selectAll) {
       setSelectedTargetIds([]);
     } else {
@@ -132,18 +63,8 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
     );
   };
 
-  const clearFilters = () => {
-    setFilters({
-      numeroArt: "",
-      teamId: "",
-      status: "",
-    });
-  };
-
-
   const handleOpenMap = () => {
-    // Salvamos os targets no contexto antes de ir para o mapa
-    // Ou você pode usar sessionStorage para persistência simples
+    // ✅ Os targets já estão no contexto, mas salvamos no sessionStorage para compatibilidade
     sessionStorage.setItem("userTargets", JSON.stringify(targets));
     router.push("/pages/minhas_fiscalizacoes/mapa");
   };
@@ -159,13 +80,19 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
           Ver no Mapa
         </ButtonComponent>
       </div>
+
+      {/* Filtros */}
       <div className="p-4 border-b bg-gray-50 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Nº ART</label>
           <input
             type="text"
-            value={filters.numeroArt}
-            onChange={(e) => setFilters((prev) => ({ ...prev, numeroArt: e.target.value }))}
+            value={localFilters.numeroArt}
+            onChange={(e) => {
+              const value = e.target.value;
+              setLocalFilters((prev) => ({ ...prev, numeroArt: value }));
+              setFilters((prev) => ({ ...prev, numeroArt: value }));
+            }}
             placeholder="72624476"
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
@@ -174,24 +101,35 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Equipe</label>
           <select
-            value={filters.teamId}
-            onChange={(e) => setFilters((prev) => ({ ...prev, teamId: e.target.value }))}
+            value={localFilters.teamId}
+            onChange={(e) => {
+              const value = e.target.value;
+              setLocalFilters((prev) => ({ ...prev, teamId: value }));
+              setFilters((prev) => ({ ...prev, teamId: value || undefined }));
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todas</option>
-            {teams.map((team) => (
-              <option key={team.id} value={team.id}>
-                {team.name}
-              </option>
-            ))}
+            {Array.from(new Set(targets.map(t => t.team?.id).filter(Boolean))).map(teamId => {
+              const team = targets.find(t => t.team?.id === teamId)?.team;
+              return (
+                <option key={teamId} value={teamId}>
+                  {team?.name}
+                </option>
+              );
+            })}
           </select>
         </div>
 
         <div>
           <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
           <select
-            value={filters.status}
-            onChange={(e) => setFilters((prev) => ({ ...prev, status: e.target.value }))}
+            value={localFilters.status}
+            onChange={(e) => {
+              const value = e.target.value;
+              setLocalFilters((prev) => ({ ...prev, status: value }));
+              setFilters((prev) => ({ ...prev, status: value || undefined }));
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Todos</option>
@@ -203,7 +141,10 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
 
         <div className="flex items-end">
           <button
-            onClick={clearFilters}
+            onClick={() => {
+              setLocalFilters({ numeroArt: "", teamId: "", status: "" });
+              setFilters({}); // Limpa filtros no contexto
+            }}
             className="w-full px-3 py-2 text-sm text-gray-600 bg-gray-200 hover:bg-gray-300 rounded transition"
           >
             Limpar
@@ -221,7 +162,7 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
                   type="checkbox"
                   checked={selectAll}
                   onChange={handleSelectAll}
-                  disabled={targets.filter((t) => !t.teamId).length === 0} // Desabilita se não houver alvos disponíveis
+                  disabled={targets.filter((t) => !t.teamId).length === 0}
                   className="w-4 h-4 text-blue-600 rounded"
                 />
               </th>
@@ -271,14 +212,15 @@ export function TargetTable({ onSelectionChange }: TargetTableProps) {
                     <td className="px-4 py-3 text-gray-700">{target.enderecoObra}</td>
                     <td className="px-4 py-3">
                       <span
-                        className={`flex items-center justify-center w-max px-2 py-[1px] border  text-xs font-medium rounded ${target.status === "CONCLUÍDA"
-                          ? "bg-green-200 text-green-700"
-                          : target.status === "EM ANDAMENTO"
+                        className={`flex items-center justify-center w-max px-2 py-[1px] border  text-xs font-medium rounded ${
+                          target.status === "CONCLUÍDA"
+                            ? "bg-green-200 text-green-700"
+                            : target.status === "EM ANDAMENTO"
                             ? "bg-yellow-200 text-yellow-700 "
                             : target.status === "NÃO INICIADA"
-                              ? "bg-blue-200 text-blue-700"
-                              : "bg-gray-200 text-gray-700" // padrão para outros
-                          }`}
+                            ? "bg-blue-200 text-blue-700"
+                            : "bg-gray-200 text-gray-700"
+                        }`}
                       >
                         {target.status}
                       </span>
